@@ -26,9 +26,7 @@ export default new Vuex.Store({
     },
     DROP_TASK(state, { fromTasks, toTasks, fromTaskIndex, toTaskIndex }) {
       const taskToMove = fromTasks.splice(fromTaskIndex, 1)[0];
-      console.log(fromTasks);
       toTasks.splice(toTaskIndex, 0, taskToMove);
-      // toTasks.push(taskToMove);
     },
     DROP_COLUMN(state, { fromColumnIndex, toColumnIndex }) {
       const columns = state.board.columns;
@@ -49,7 +47,6 @@ export default new Vuex.Store({
         for (const column of state.board.columns) {
           for (const task of column.tasks) {
             if (task.id == id) {
-              console.log(task.name);
               return task;
             }
           }
