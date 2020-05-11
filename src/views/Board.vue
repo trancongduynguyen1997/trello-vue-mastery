@@ -1,15 +1,15 @@
 <template>
-  <div class="board">
-    <div class="flex flex-row items-start">
+  <div class="board overflow-x-auto">
+    <div class="flex flex-row items-start w-full">
       <div
         class="column"
         v-for="(column, columnIndex) in board.columns"
         :key="column.name"
-        @drop="onDrop($event, columnIndex)"
+        @drop="onDropColumn($event, columnIndex)"
         @dragover.prevent
         @dragenter.prevent
         draggable
-        @dragstart="startDragColumn($event, columnIndex)"
+        @dragstart.self="startDragColumn($event, columnIndex)"
       >
         <div class="flex items-center font-bold">{{column.name}}</div>
 
@@ -20,6 +20,9 @@
           @click="goToTask(task)"
           draggable
           @dragstart="startDragTask($event, taskIndex, columnIndex)"
+          @drop="onDropTask($event, columnIndex, taskIndex)"
+          @dragover.prevent
+          @dragenter.prevent
         >
           <span>{{task.name}}</span>
         </div>
@@ -31,6 +34,13 @@
           @keyup.enter="addNewTask($event, column.tasks)"
         />
       </div>
+      <input
+        class="p-2 mr-4 flex-grow"
+        type="text"
+        v-model="newColumnName"
+        @keyup.enter="addNewColumn"
+        placeholder="+ Add new column"
+      />
     </div>
 
     <div v-if="isTaskOpen" @click.self="close" class="task-bg">
@@ -73,31 +83,55 @@ export default {
 
       dT.setData("from-task-index", taskIndex);
       dT.setData("from-column-index", fromColumnIndex);
+      dT.setData("drag-type", "task");
     },
-    onDrop(e, toColumnIndex) {
+    onDropTask(e, toColumnIndex, toTaskIndex) {
       const dT = e.dataTransfer;
+      const dragType = dT.getData("drag-type");
       const fromTaskIndex = dT.getData("from-task-index");
       const fromColumnIndex = dT.getData("from-column-index");
-      if (fromTaskIndex) {
+      if (dragType === "task") {
         const fromTasks = this.board.columns[fromColumnIndex].tasks;
         const toTasks = this.board.columns[toColumnIndex].tasks;
-        this.$store.commit("DROP_TASK", { fromTasks, toTasks, fromTaskIndex });
-      } else {
-        this.$store.commit("DROP_COLUMN", { fromColumnIndex, toColumnIndex });
+        this.$store.commit("DROP_TASK", {
+          fromTasks,
+          toTasks,
+          fromTaskIndex,
+          toTaskIndex
+        });
       }
     },
     startDragColumn(e, fromColumnIndex) {
       const dT = e.dataTransfer;
       dT.dropEffect = "move";
       dT.setData("from-column-index", fromColumnIndex);
+      dT.setData("drag-type", "column");
+    },
+
+    onDropColumn(e, toColumnIndex) {
+      const dT = e.dataTransfer;
+      const dragType = dT.getData("drag-type");
+      const fromColumnIndex = dT.getData("from-column-index");
+      if (dragType === "column") {
+        this.$store.commit("DROP_COLUMN", { fromColumnIndex, toColumnIndex });
+      }
+    },
+    addNewColumn() {
+      this.$store.commit("CREATE_COLUMN", this.newColumnName);
+      this.newColumnName = "";
     }
+  },
+  data() {
+    return {
+      newColumnName: ""
+    };
   }
 };
 </script>
 
 <style lang="css">
 .board {
-  @apply p-4 bg-teal-800 h-full overflow-auto relative;
+  @apply p-4 bg-teal-800 h-full w-full relative;
 }
 .column {
   @apply bg-gray-500 p-2 mr-4 pr-4 text-left shadow rounded;

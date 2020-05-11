@@ -24,14 +24,22 @@ export default new Vuex.Store({
     UPDATE_TASK(state, { task, key, value }) {
       task[key] = value;
     },
-    DROP_TASK(state, { fromTasks, toTasks, fromTaskIndex }) {
+    DROP_TASK(state, { fromTasks, toTasks, fromTaskIndex, toTaskIndex }) {
       const taskToMove = fromTasks.splice(fromTaskIndex, 1)[0];
-      toTasks.push(taskToMove);
+      console.log(fromTasks);
+      toTasks.splice(toTaskIndex, 0, taskToMove);
+      // toTasks.push(taskToMove);
     },
     DROP_COLUMN(state, { fromColumnIndex, toColumnIndex }) {
       const columns = state.board.columns;
       const columnToMove = columns.splice(fromColumnIndex, 1)[0];
       columns.splice(toColumnIndex, 0, columnToMove);
+    },
+    CREATE_COLUMN(state, name) {
+      state.board.columns.push({
+        name,
+        tasks: [],
+      });
     },
   },
   actions: {},
