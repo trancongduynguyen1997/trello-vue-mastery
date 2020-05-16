@@ -1,36 +1,37 @@
 <template>
-  <div
-    class="column"
-    @drop="onDropColumn($event, columnIndex)"
-    @dragover.prevent
-    @dragenter.prevent
-    draggable
-    @dragstart.self="startDragColumn($event, columnIndex)"
-  >
-    <div class="flex items-center font-bold">{{column.name}}</div>
-    <ColumnTask
-      v-for="(task, taskIndex) in column.tasks"
-      :key="task.id"
-      :board="board"
-      :task="task"
-      :taskIndex="taskIndex"
-      :columnIndex="columnIndex"
-    />
+  <AppDrop @onDrop="drop($event)">
+    <AppDrag class="column" :dragData="{
+      'from-column-index': columnIndex
+    }">
+      <div class="flex items-center font-bold">{{column.name}}</div>
+      <ColumnTask
+        v-for="(task, taskIndex) in column.tasks"
+        :key="task.id"
+        :board="board"
+        :task="task"
+        :taskIndex="taskIndex"
+        :columnIndex="columnIndex"
+      />
 
-    <input
-      class="add-task-input placeholder-gray-800"
-      type="text"
-      placeholder="+ Add new task"
-      @keyup.enter="addNewTask($event, column.tasks)"
-    />
-  </div>
+      <input
+        class="add-task-input placeholder-gray-800"
+        type="text"
+        placeholder="+ Add new task"
+        @keyup.enter="addNewTask($event, column.tasks)"
+      />
+    </AppDrag>
+  </AppDrop>
 </template>
 
 <script>
 import ColumnTask from "./ColumnTask";
+import AppDrag from "./AppDrag";
+import AppDrop from "./AppDrop";
 export default {
   components: {
-    ColumnTask
+    ColumnTask,
+    AppDrag,
+    AppDrop
   },
   props: {
     board: {
@@ -55,19 +56,12 @@ export default {
       e.target.value = "";
     },
 
-    startDragColumn(e, fromColumnIndex) {
-      const dT = e.dataTransfer;
-      dT.dropEffect = "move";
-      dT.setData("from-column-index", fromColumnIndex);
-      dT.setData("drag-type", "column");
-    },
-    onDropColumn(e, toColumnIndex) {
-      const dT = e.dataTransfer;
-      const dragType = dT.getData("drag-type");
-      const fromColumnIndex = dT.getData("from-column-index");
-      if (dragType === "column") {
-        this.$store.commit("DROP_COLUMN", { fromColumnIndex, toColumnIndex });
-      }
+    drop(e) {
+      const fromColumnIndex = e["from-column-index"];
+      this.$store.commit("DROP_COLUMN", {
+        fromColumnIndex,
+        toColumnIndex: this.columnIndex
+      });
     }
   }
 };

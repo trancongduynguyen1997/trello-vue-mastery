@@ -1,19 +1,25 @@
 <template>
-  <div
-    class="w-full bg-white m-2 p-2 rounded"
-    @click="goToTask(task)"
-    draggable
-    @dragstart="startDragTask($event,columnIndex, taskIndex )"
-    @drop="onDropTask($event, columnIndex, taskIndex)"
-    @dragover.prevent
-    @dragenter.prevent
-  >
-    <span>{{task.name}}</span>
-  </div>
+  <AppDrop @onDrop="drop($event)">
+    <AppDrag
+      class="w-full bg-white m-2 p-2 rounded"
+      :dragData="{
+      'from-column-index': columnIndex,
+      'from-task-index': taskIndex
+    }"
+    >
+      <span>{{task.name}}</span>
+    </AppDrag>
+  </AppDrop>
 </template>
 
 <script>
+import AppDrag from "./AppDrag";
+import AppDrop from "./AppDrop";
 export default {
+  components: {
+    AppDrag,
+    AppDrop
+  },
   props: {
     board: {
       type: Object,
@@ -28,8 +34,8 @@ export default {
       required: true
     },
     columnIndex: {
-        type:Number,
-        required:true
+      type: Number,
+      required: true
     }
   },
   methods: {
@@ -38,30 +44,17 @@ export default {
         this.$router.push({ name: "Task", params: { id: task.id } });
       }
     },
-    startDragTask(e, fromColumnIndex, taskIndex) {
-      const dT = e.dataTransfer;
-      dT.dropEffect = "move";
-      dT.effectAllowed = "move";
-
-      dT.setData("from-task-index", taskIndex);
-      dT.setData("from-column-index", fromColumnIndex);
-      dT.setData("drag-type", "task");
-    },
-    onDropTask(e, toColumnIndex, toTaskIndex) {
-      const dT = e.dataTransfer;
-      const dragType = dT.getData("drag-type");
-      const fromTaskIndex = dT.getData("from-task-index");
-      const fromColumnIndex = dT.getData("from-column-index");
-      if (dragType === "task") {
-        const fromTasks = this.board.columns[fromColumnIndex].tasks;
-        const toTasks = this.board.columns[toColumnIndex].tasks;
-        this.$store.commit("DROP_TASK", {
-          fromTasks,
-          toTasks,
-          fromTaskIndex,
-          toTaskIndex
-        });
-      }
+    drop(e) {
+      const fromTaskIndex = e["from-task-index"];
+      const fromColumnIndex = e["from-column-index"];
+      const fromTasks = this.board.columns[fromColumnIndex].tasks;
+      const toTasks = this.board.columns[this.columnIndex].tasks;
+      this.$store.commit("DROP_TASK", {
+        fromTasks,
+        toTasks,
+        fromTaskIndex,
+        toTaskIndex: this.taskIndex
+      });
     }
   }
 };
