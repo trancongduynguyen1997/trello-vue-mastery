@@ -25,13 +25,10 @@
 
 <script>
 import ColumnTask from "./ColumnTask";
-import AppDrag from "./AppDrag";
-import AppDrop from "./AppDrop";
+
 export default {
   components: {
-    ColumnTask,
-    AppDrag,
-    AppDrop
+    ColumnTask
   },
   props: {
     board: {

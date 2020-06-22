@@ -13,13 +13,7 @@
 </template>
 
 <script>
-import AppDrag from "./AppDrag";
-import AppDrop from "./AppDrop";
 export default {
-  components: {
-    AppDrag,
-    AppDrop
-  },
   props: {
     board: {
       type: Object,
